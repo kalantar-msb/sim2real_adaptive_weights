@@ -1,0 +1,38 @@
+=== Workload: w1-prefix-to-load-shift ===
+  Metric        Baseline  Treatment  Delta(ms)              Change
+  ────────────────────────────────────────────────────────────────
+  TTFT mean         507.4    485.5    -21.8      -4.3% (better)
+  TTFT p50           64.3     64.1     -0.2      -0.3% (better)
+  TTFT p99         5400.5   5139.0   -261.5      -4.8% (better)
+  TPOT mean          14.2     14.3     +0.1      +0.5% (worse)
+  TPOT p50           12.8     12.8     -0.0      -0.1% (better)
+  TPOT p99           43.3     45.8     +2.5      +5.8% (worse)
+  E2E mean         3376.2   3345.2    -31.0      -0.9% (better)
+  E2E p50          2729.2   2712.9    -16.4      -0.6% (better)
+  E2E p99         11992.5  11827.9   -164.7      -1.4% (better)
+
+=== Workload: w2-stationary ===
+  Metric        Baseline  Treatment  Delta(ms)              Change
+  ────────────────────────────────────────────────────────────────
+  TTFT mean         637.1    414.8   -222.2      -34.9% (better)
+  TTFT p50           92.8     90.1     -2.8      -3.0% (better)
+  TTFT p99         5151.4   5279.8   +128.5      +2.5% (worse)
+  TPOT mean          18.2     17.3     -0.9      -5.2% (better)
+  TPOT p50           15.6     15.5     -0.0      -0.2% (better)
+  TPOT p99           64.8     55.8     -9.0      -13.9% (better)
+  E2E mean         4218.5   3867.3   -351.2      -8.3% (better)
+  E2E p50          3374.0   3180.7   -193.3      -5.7% (better)
+  E2E p99         14667.6  14072.6   -595.0      -4.1% (better)
+
+=== Workload: w3-multi-prefix-contention ===
+  Metric        Baseline  Treatment  Delta(ms)              Change
+  ────────────────────────────────────────────────────────────────
+  TTFT mean         306.2    308.4     +2.2      +0.7% (worse)
+  TTFT p50           72.3     73.9     +1.6      +2.2% (worse)
+  TTFT p99         4610.9   4677.8    +66.9      +1.5% (worse)
+  TPOT mean          14.3     14.4     +0.1      +0.7% (worse)
+  TPOT p50           13.5     13.6     +0.0      +0.2% (worse)
+  TPOT p99           32.5     35.5     +2.9      +9.0% (worse)
+  E2E mean         3626.1   3655.6    +29.5      +0.8% (worse)
+  E2E p50          3354.7   3338.2    -16.5      -0.5% (better)
+  E2E p99          9871.0  10571.0   +700.0      +7.1% (worse)
