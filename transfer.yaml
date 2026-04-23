@@ -1,0 +1,72 @@
+kind: sim2real-transfer
+version: 3
+
+scenario: adaptive-weights
+
+algorithm:
+  source: algorithms/algorithm_adaptive.go
+
+baseline:
+
+  real:
+    notes: |
+      Use this exact precise prefix cache scoring config:
+
+      ```yaml
+      apiVersion: inference.networking.x-k8s.io/v1alpha1
+      kind: EndpointPickerConfig
+      plugins:
+        - type: single-profile-handler
+        - type: tokenizer
+          parameters:
+            modelName: Qwen/Qwen3-14B
+            udsTokenizerConfig:
+              socketFile: /tmp/tokenizer/tokenizer-uds.socket
+        - type: precise-prefix-cache-scorer
+          parameters:
+            tokenProcessorConfig:
+              blockSize: 64
+            indexerConfig:
+              speculativeIndexing: true
+              tokenizersPoolConfig:
+                modelName: Qwen/Qwen3-14B
+                local: null
+                hf: null
+                uds:
+                  socketFile: /tmp/tokenizer/tokenizer-uds.socket
+            kvEventsConfig:
+              topicFilter: "kv@"
+              concurrency: 4
+              discoverPods: false
+              zmqEndpoint: "tcp://*:5557"
+        - type: kv-cache-utilization-scorer
+        - type: queue-scorer
+        - type: max-score-picker
+      schedulingProfiles:
+        - name: default
+          plugins:
+            - pluginRef: precise-prefix-cache-scorer
+              weight: 3.0
+            - pluginRef: kv-cache-utilization-scorer
+              weight: 2.0
+            - pluginRef: queue-scorer
+              weight: 2.0
+            - pluginRef: max-score-picker
+      ````
+
+workloads:
+- workloads/w1_prefix_to_load_shift.yaml
+- workloads/w2_stationary.yaml
+- workloads/w3_multi_prefix_contention.yaml
+
+
+hints:
+  files:
+  - README.md
+  - config.md
+
+context:
+  files:
+  - ../../inference-sim/sim2real/blis-context.md
+  - gaie_context.md
+  - llm-d-inference-scheduler-context.md
