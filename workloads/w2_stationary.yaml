@@ -1,0 +1,28 @@
+# W2: Stationary baseline (sanity check)
+#
+# Steady 40 QPS with 60% prefix + 40% cold. No phases.
+# Adaptive algorithm must NOT regress vs static 3:2:2 here.
+# 4000 requests total.
+
+version: "2"
+seed: 42
+aggregate_rate: 40
+num_requests: 4000
+horizon: 100000000   # 100s
+
+clients:
+  - id: "prefix-A"
+    prefix_group: "system-prompt-A"
+    prefix_length: 512
+    rate_fraction: 0.60
+    streaming: true
+    arrival: {process: poisson}
+    input_distribution: {type: gaussian, params: {mean: 512, std_dev: 128, min: 128, max: 1024}}
+    output_distribution: {type: gaussian, params: {mean: 256, std_dev: 128, min: 32, max: 768}}
+
+  - id: "cold-queries"
+    rate_fraction: 0.40
+    streaming: true
+    arrival: {process: poisson}
+    input_distribution: {type: gaussian, params: {mean: 256, std_dev: 64, min: 64, max: 512}}
+    output_distribution: {type: gaussian, params: {mean: 128, std_dev: 64, min: 32, max: 512}}

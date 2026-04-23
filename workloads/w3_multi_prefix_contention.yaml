@@ -1,0 +1,73 @@
+# W3: Heavy prefix hotspot flip
+#
+# Phase 1 (0-50s): 85% prefix-A + 15% cold at 40 QPS
+#   → baseline routes ~34 QPS to one instance, ~2 QPS to others
+#   → massive hotspot, deep queue on hot instance
+#   → adaptive detects concentrated prefix scores, suppresses prefix weight
+#
+# Phase 2 (50-100s): 85% prefix-B + 15% cold at 40 QPS
+#   → hotspot flips to a DIFFERENT instance (prefix-B cached elsewhere)
+#   → baseline builds a second hotspot
+#   → adaptive must re-detect concentration and suppress again
+#
+# Both phases have severe hotspots. The adaptive algorithm should suppress
+# prefix weight in both phases, routing via queue/kv instead.
+#
+# 4000 requests total.
+
+version: "2"
+seed: 42
+aggregate_rate: 40
+num_requests: 4000
+horizon: 100000000   # 100s
+
+clients:
+  # Phase 1: heavy prefix-A
+  - id: "phase1-prefix-A"
+    prefix_group: "system-prompt-A"
+    prefix_length: 512
+    rate_fraction: 0.85
+    streaming: true
+    arrival: {process: poisson}
+    input_distribution: {type: gaussian, params: {mean: 512, std_dev: 128, min: 128, max: 1024}}
+    output_distribution: {type: gaussian, params: {mean: 256, std_dev: 128, min: 32, max: 768}}
+    lifecycle:
+      windows:
+        - start_us: 0
+          end_us: 50000000
+
+  - id: "phase1-cold"
+    rate_fraction: 0.15
+    streaming: true
+    arrival: {process: poisson}
+    input_distribution: {type: gaussian, params: {mean: 256, std_dev: 64, min: 64, max: 512}}
+    output_distribution: {type: gaussian, params: {mean: 128, std_dev: 64, min: 32, max: 512}}
+    lifecycle:
+      windows:
+        - start_us: 0
+          end_us: 50000000
+
+  # Phase 2: heavy prefix-B (different group → different hot instance)
+  - id: "phase2-prefix-B"
+    prefix_group: "system-prompt-B"
+    prefix_length: 512
+    rate_fraction: 0.85
+    streaming: true
+    arrival: {process: poisson}
+    input_distribution: {type: gaussian, params: {mean: 512, std_dev: 128, min: 128, max: 1024}}
+    output_distribution: {type: gaussian, params: {mean: 256, std_dev: 128, min: 32, max: 768}}
+    lifecycle:
+      windows:
+        - start_us: 50000000
+          end_us: 100000000
+
+  - id: "phase2-cold"
+    rate_fraction: 0.15
+    streaming: true
+    arrival: {process: poisson}
+    input_distribution: {type: gaussian, params: {mean: 256, std_dev: 64, min: 64, max: 512}}
+    output_distribution: {type: gaussian, params: {mean: 128, std_dev: 64, min: 32, max: 512}}
+    lifecycle:
+      windows:
+        - start_us: 50000000
+          end_us: 100000000
