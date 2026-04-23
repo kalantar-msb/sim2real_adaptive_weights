@@ -1,0 +1,3 @@
+[submodule "llm-d-inference-scheduler"]
+	path = llm-d-inference-scheduler
+	url = https://github.com/llm-d/llm-d-inference-scheduler
