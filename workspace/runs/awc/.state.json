@@ -1,0 +1,46 @@
+{
+  "run_name": "awc",
+  "scenario": "adaptive-weights",
+  "phases": {
+    "init": {
+      "status": "done",
+      "timestamp": "2026-04-23T15:28:39.933557+00:00"
+    },
+    "context": {
+      "status": "done",
+      "timestamp": "2026-04-23T15:28:39.970784+00:00",
+      "hash": "edacb460c5ad",
+      "cached": true,
+      "path": "/Users/kalantar/projects/go.workspace/src/github.com/kalantar-msb/sim2real_adaptive_weights/workspace/context/adaptive-weights/edacb460c5ad.md",
+      "context_file_prepared": true,
+      "context_file_populated": true
+    },
+    "translate": {
+      "status": "done",
+      "timestamp": "2026-04-23T16:31:13.486009+00:00",
+      "files": [
+        "pkg/plugins/scorer/adaptive_routing.go",
+        "pkg/plugins/scorer/adaptive_routing_test.go"
+      ],
+      "review_rounds": 2,
+      "consensus": "1/1"
+    },
+    "assembly": {
+      "status": "done",
+      "timestamp": "2026-04-23T16:35:14.980532+00:00",
+      "packages": [
+        "baseline",
+        "treatment"
+      ]
+    },
+    "summary": {
+      "status": "done",
+      "timestamp": "2026-04-23T16:35:14.981764+00:00"
+    },
+    "gate": {
+      "status": "done",
+      "timestamp": "2026-04-23T16:35:18.879104+00:00",
+      "verdict": "READY TO DEPLOY"
+    }
+  }
+}

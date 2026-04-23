@@ -1,0 +1,286 @@
+observe:
+  image: ghcr.io/inference-sim/blis:v0.7.6
+  workloads:
+  - aggregate_rate: 40
+    clients:
+    - arrival:
+        process: poisson
+      id: phase1-prefix-A
+      input_distribution:
+        params:
+          max: 1024
+          mean: 512
+          min: 128
+          std_dev: 128
+        type: gaussian
+      lifecycle:
+        windows:
+        - end_us: 50000000
+          start_us: 0
+      output_distribution:
+        params:
+          max: 768
+          mean: 256
+          min: 32
+          std_dev: 128
+        type: gaussian
+      prefix_group: system-prompt-A
+      prefix_length: 512
+      rate_fraction: 0.7
+      streaming: true
+    - arrival:
+        process: poisson
+      id: phase1-cold
+      input_distribution:
+        params:
+          max: 512
+          mean: 256
+          min: 64
+          std_dev: 64
+        type: gaussian
+      lifecycle:
+        windows:
+        - end_us: 50000000
+          start_us: 0
+      output_distribution:
+        params:
+          max: 512
+          mean: 128
+          min: 32
+          std_dev: 64
+        type: gaussian
+      rate_fraction: 0.3
+      streaming: true
+    - arrival:
+        process: poisson
+      id: phase2-cold
+      input_distribution:
+        params:
+          max: 768
+          mean: 384
+          min: 64
+          std_dev: 128
+        type: gaussian
+      lifecycle:
+        windows:
+        - end_us: 100000000
+          start_us: 50000000
+      output_distribution:
+        params:
+          max: 640
+          mean: 192
+          min: 32
+          std_dev: 96
+        type: gaussian
+      rate_fraction: 1.0
+      streaming: true
+    horizon: 100000000
+    num_requests: 4000
+    seed: 42
+    version: '2'
+    workload_name: w1_prefix_to_load_shift
+  - aggregate_rate: 40
+    clients:
+    - arrival:
+        process: poisson
+      id: prefix-A
+      input_distribution:
+        params:
+          max: 1024
+          mean: 512
+          min: 128
+          std_dev: 128
+        type: gaussian
+      output_distribution:
+        params:
+          max: 768
+          mean: 256
+          min: 32
+          std_dev: 128
+        type: gaussian
+      prefix_group: system-prompt-A
+      prefix_length: 512
+      rate_fraction: 0.6
+      streaming: true
+    - arrival:
+        process: poisson
+      id: cold-queries
+      input_distribution:
+        params:
+          max: 512
+          mean: 256
+          min: 64
+          std_dev: 64
+        type: gaussian
+      output_distribution:
+        params:
+          max: 512
+          mean: 128
+          min: 32
+          std_dev: 64
+        type: gaussian
+      rate_fraction: 0.4
+      streaming: true
+    horizon: 100000000
+    num_requests: 4000
+    seed: 42
+    version: '2'
+    workload_name: w2_stationary
+  - aggregate_rate: 40
+    clients:
+    - arrival:
+        process: poisson
+      id: phase1-prefix-A
+      input_distribution:
+        params:
+          max: 1024
+          mean: 512
+          min: 128
+          std_dev: 128
+        type: gaussian
+      lifecycle:
+        windows:
+        - end_us: 50000000
+          start_us: 0
+      output_distribution:
+        params:
+          max: 768
+          mean: 256
+          min: 32
+          std_dev: 128
+        type: gaussian
+      prefix_group: system-prompt-A
+      prefix_length: 512
+      rate_fraction: 0.85
+      streaming: true
+    - arrival:
+        process: poisson
+      id: phase1-cold
+      input_distribution:
+        params:
+          max: 512
+          mean: 256
+          min: 64
+          std_dev: 64
+        type: gaussian
+      lifecycle:
+        windows:
+        - end_us: 50000000
+          start_us: 0
+      output_distribution:
+        params:
+          max: 512
+          mean: 128
+          min: 32
+          std_dev: 64
+        type: gaussian
+      rate_fraction: 0.15
+      streaming: true
+    - arrival:
+        process: poisson
+      id: phase2-prefix-B
+      input_distribution:
+        params:
+          max: 1024
+          mean: 512
+          min: 128
+          std_dev: 128
+        type: gaussian
+      lifecycle:
+        windows:
+        - end_us: 100000000
+          start_us: 50000000
+      output_distribution:
+        params:
+          max: 768
+          mean: 256
+          min: 32
+          std_dev: 128
+        type: gaussian
+      prefix_group: system-prompt-B
+      prefix_length: 512
+      rate_fraction: 0.85
+      streaming: true
+    - arrival:
+        process: poisson
+      id: phase2-cold
+      input_distribution:
+        params:
+          max: 512
+          mean: 256
+          min: 64
+          std_dev: 64
+        type: gaussian
+      lifecycle:
+        windows:
+        - end_us: 100000000
+          start_us: 50000000
+      output_distribution:
+        params:
+          max: 512
+          mean: 128
+          min: 32
+          std_dev: 64
+        type: gaussian
+      rate_fraction: 0.15
+      streaming: true
+    horizon: 100000000
+    num_requests: 4000
+    seed: 42
+    version: '2'
+    workload_name: w3_multi_prefix_contention
+stack:
+  gaie:
+    baseline:
+      helmValues:
+        inferenceExtension:
+          pluginsCustomConfig:
+            custom-plugins.yaml: "apiVersion: inference.networking.x-k8s.io/v1alpha1\n\
+              kind: EndpointPickerConfig\nplugins:\n  - name: profile\n    type: single-profile-handler\n\
+              \  - name: tokenizer\n    type: tokenizer\n    parameters:\n      modelName:\
+              \ Qwen/Qwen3-14B\n      udsTokenizerConfig:\n        socketFile: /tmp/tokenizer/tokenizer-uds.socket\n\
+              \  - name: ppc\n    type: precise-prefix-cache-scorer\n    parameters:\n\
+              \      tokenProcessorConfig:\n        blockSize: 64\n      indexerConfig:\n\
+              \        speculativeIndexing: true\n        tokenizersPoolConfig:\n\
+              \          modelName: Qwen/Qwen3-14B\n          local: null\n      \
+              \    hf: null\n          uds:\n            socketFile: /tmp/tokenizer/tokenizer-uds.socket\n\
+              \      kvEventsConfig:\n        topicFilter: \"kv@\"\n        concurrency:\
+              \ 4\n        discoverPods: false\n        zmqEndpoint: \"tcp://*:5557\"\
+              \n  - name: kv\n    type: kv-cache-utilization-scorer\n  - name: qd\n\
+              \    type: queue-scorer\n  - name: picker\n    type: max-score-picker\n\
+              schedulingProfiles:\n  - name: default\n    plugins:\n      - pluginRef:\
+              \ ppc\n        weight: 3.0\n      - pluginRef: kv\n        weight: 2.0\n\
+              \      - pluginRef: qd\n        weight: 2.0\n      - pluginRef: picker\n"
+    treatment:
+      helmValues:
+        inferenceExtension:
+          image:
+            hub: ghcr.io/kalantar
+            name: llm-d-inference-scheduler
+            tag: awc
+          pluginsCustomConfig:
+            custom-plugins.yaml: "apiVersion: inference.networking.x-k8s.io/v1alpha1\n\
+              kind: EndpointPickerConfig\nplugins:\n  - name: profile\n    type: single-profile-handler\n\
+              \  - name: tokenizer\n    type: tokenizer\n    parameters:\n      modelName:\
+              \ Qwen/Qwen3-14B\n      udsTokenizerConfig:\n        socketFile: /tmp/tokenizer/tokenizer-uds.socket\n\
+              \  - name: ppc\n    type: precise-prefix-cache-scorer\n    parameters:\n\
+              \      tokenProcessorConfig:\n        blockSize: 64\n      indexerConfig:\n\
+              \        speculativeIndexing: true\n        tokenizersPoolConfig:\n\
+              \          modelName: Qwen/Qwen3-14B\n          local: null\n      \
+              \    hf: null\n          uds:\n            socketFile: /tmp/tokenizer/tokenizer-uds.socket\n\
+              \      kvEventsConfig:\n        topicFilter: \"kv@\"\n        concurrency:\
+              \ 4\n        discoverPods: false\n        zmqEndpoint: \"tcp://*:5557\"\
+              \n  - name: kv\n    type: kv-cache-utilization-scorer\n  - name: qd\n\
+              \    type: queue-scorer\n  - name: delegation-scorer\n    type: adaptive-routing-scorer\n\
+              \    parameters:\n      scorerNames: [\"ppc\", \"qd\", \"kv\"]\n   \
+              \   baseWeights: [3.0, 2.0, 2.0]\n      mode: \"adaptive\"\n  - name:\
+              \ picker\n    type: max-score-picker\nschedulingProfiles:\n  - name:\
+              \ default\n    plugins:\n      - pluginRef: delegation-scorer\n    \
+              \    weight: 1.0\n      - pluginRef: picker\n"
+  model:
+    helmValues:
+      decode:
+        containers:
+        - env:
+          - name: GAIE_RELEASE_NAME_POSTFIX
+            value: sim2real-awc

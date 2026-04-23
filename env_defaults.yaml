@@ -117,7 +117,7 @@ common:
         build:
           hub: ghcr.io/kalantar
           name: llm-d-inference-scheduler
-          tag: aw
+          tag: awc
           platform: linux/amd64
           pullPolicy: Always
 scenarios:

@@ -4,7 +4,7 @@ version: 3
 scenario: adaptive-weights
 
 algorithm:
-  source: algorithms/algorithm_adaptive.go
+  source: algorithms/algorithm_control.go
 
 baseline:
 

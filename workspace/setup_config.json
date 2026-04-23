@@ -7,8 +7,8 @@
   "tektonc_dir": "/Users/kalantar/projects/go.workspace/src/github.com/inference-sim/sim2real/tektonc-data-collection",
   "sim2real_root": "/Users/kalantar/projects/go.workspace/src/github.com/inference-sim/sim2real",
   "container_runtime": "podman",
-  "current_run": "aw",
-  "setup_timestamp": "2026-04-23T12:17:34Z",
+  "current_run": "awc",
+  "setup_timestamp": "2026-04-23T15:28:29Z",
   "workspaces": {
     "model-cache": {
       "persistentVolumeClaim": {
