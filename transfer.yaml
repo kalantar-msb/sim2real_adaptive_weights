@@ -4,7 +4,7 @@ version: 3
 scenario: adaptive-weights
 
 algorithm:
-  source: algorithms/algorithm_control.go
+  source: algorithms/algorithm_adaptive.go
 
 baseline:
 
@@ -24,10 +24,10 @@ baseline:
               socketFile: /tmp/tokenizer/tokenizer-uds.socket
         - type: precise-prefix-cache-scorer
           parameters:
+            speculativeIndexing: true
             tokenProcessorConfig:
               blockSize: 64
             indexerConfig:
-              speculativeIndexing: true
               tokenizersPoolConfig:
                 modelName: Qwen/Qwen3-14B
                 local: null

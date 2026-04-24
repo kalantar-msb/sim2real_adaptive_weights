@@ -1,5 +1,8 @@
 {
   "namespace": "kalantar",
+  "namespaces": [
+    "kalantar"
+  ],
   "registry": "ghcr.io/kalantar",
   "repo_name": "llm-d-inference-scheduler",
   "storage_class": "ibm-spectrum-scale-fileset",
@@ -7,8 +10,8 @@
   "tektonc_dir": "/Users/kalantar/projects/go.workspace/src/github.com/inference-sim/sim2real/tektonc-data-collection",
   "sim2real_root": "/Users/kalantar/projects/go.workspace/src/github.com/inference-sim/sim2real",
   "container_runtime": "podman",
-  "current_run": "awc",
-  "setup_timestamp": "2026-04-23T15:28:29Z",
+  "current_run": "aw",
+  "setup_timestamp": "2026-04-24T13:40:45Z",
   "workspaces": {
     "model-cache": {
       "persistentVolumeClaim": {

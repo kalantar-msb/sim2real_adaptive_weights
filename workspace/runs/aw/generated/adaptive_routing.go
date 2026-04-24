@@ -109,16 +109,37 @@ func AdaptiveRoutingScorerFactory(name string, rawParameters json.RawMessage, ha
 		scorers[i] = s
 	}
 
+	// Pre-normalize base weights to sum to 1.0. This is necessary because the
+	// delegation scorer is a single scorer from the framework's perspective, and
+	// GAIE's enforceScoreRange clamps individual scorer outputs to [0,1]. Without
+	// normalization, raw weights (e.g. 3+2+2=7) could produce scores up to 7.0,
+	// which the framework would clamp to 1.0 — destroying all differentiation.
+	// Pre-normalizing makes the scoring loop match the source algorithm's
+	// accumulation pattern (clamp(subScore) × weight) while keeping output in [0,1].
+	// Adaptive mode is scale-invariant (it renormalizes in step 2), so this is safe.
+	normalizedWeights := make([]float64, len(params.BaseWeights))
+	copy(normalizedWeights, params.BaseWeights)
+	totalW := 0.0
+	for _, w := range normalizedWeights {
+		totalW += w
+	}
+	if totalW > 1e-12 {
+		for i := range normalizedWeights {
+			normalizedWeights[i] /= totalW
+		}
+	}
+
 	logger.V(logutil.TRACE).Info("created adaptive routing scorer",
 		"scorerNames", params.ScorerNames,
 		"baseWeights", params.BaseWeights,
+		"normalizedWeights", normalizedWeights,
 		"mode", mode,
 	)
 
 	return &AdaptiveRoutingScorer{
 		typedName:   plugin.TypedName{Type: AdaptiveRoutingScorerType, Name: name},
 		scorers:     scorers,
-		baseWeights: params.BaseWeights,
+		baseWeights: normalizedWeights,
 		mode:        mode,
 	}, nil
 }
@@ -155,21 +176,15 @@ func (s *AdaptiveRoutingScorer) Score(ctx context.Context, cycleState *schedulin
 	return s.adaptiveBlend(subScores, endpoints, traceLogger, logger)
 }
 
-// controlBlend computes a plain weighted sum using base weights (no adaptation).
+// controlBlend computes a plain weighted sum using pre-normalized base weights (no adaptation).
+// Matches GAIE's runScorerPlugins() accumulation: scores[ep] += clamp(subScore) × weight.
+// Weights are pre-normalized at construction time so output stays in [0,1].
 func (s *AdaptiveRoutingScorer) controlBlend(subScores []map[scheduling.Endpoint]float64, endpoints []scheduling.Endpoint, traceLogger logr.Logger) map[scheduling.Endpoint]float64 {
-	totalW := 0.0
-	for _, w := range s.baseWeights {
-		totalW += w
-	}
-	if totalW < 1e-12 {
-		totalW = 1.0
-	}
-
 	scores := make(map[scheduling.Endpoint]float64, len(endpoints))
 	for _, ep := range endpoints {
 		var sum float64
 		for i, ss := range subScores {
-			sum += clamp01Adaptive(ss[ep]) * s.baseWeights[i] / totalW
+			sum += clamp01Adaptive(ss[ep]) * s.baseWeights[i]
 		}
 		scores[ep] = sum
 	}

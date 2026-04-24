@@ -304,18 +304,63 @@ func TestScore_ControlMode_MultipleScorers(t *testing.T) {
 	s1Scores := map[scheduling.Endpoint]float64{ep1: 1.0, ep2: 0.0}
 	s2Scores := map[scheduling.Endpoint]float64{ep1: 0.0, ep2: 1.0}
 
+	// Weights are pre-normalized by the factory (3/5=0.6, 2/5=0.4).
+	// Control blend accumulates: scores[ep] += clamp(subScore) * weight.
 	s := &AdaptiveRoutingScorer{
 		typedName:   plugin.TypedName{Type: AdaptiveRoutingScorerType, Name: "test"},
 		scorers:     []scheduling.Scorer{newStubScorer("s1", s1Scores), newStubScorer("s2", s2Scores)},
-		baseWeights: []float64{3.0, 2.0},
+		baseWeights: []float64{0.6, 0.4},
 		mode:        "control",
 	}
 
 	scores := s.Score(context.Background(), &scheduling.CycleState{}, nil, endpoints)
-	// ep1: (1.0 * 3/5) + (0.0 * 2/5) = 0.6
-	// ep2: (0.0 * 3/5) + (1.0 * 2/5) = 0.4
+	// ep1: (1.0 * 0.6) + (0.0 * 0.4) = 0.6
+	// ep2: (0.0 * 0.6) + (1.0 * 0.4) = 0.4
 	assertClose(t, scores[ep1], 0.6, 1e-9, "ep1")
 	assertClose(t, scores[ep2], 0.4, 1e-9, "ep2")
+}
+
+func TestScore_AdaptiveMode_SingleEndpoint(t *testing.T) {
+	ep1 := newMockEndpoint("ep1", 0.5, 10)
+	endpoints := []scheduling.Endpoint{ep1}
+
+	stubScores := map[scheduling.Endpoint]float64{ep1: 0.8}
+	s := &AdaptiveRoutingScorer{
+		typedName:   plugin.TypedName{Type: AdaptiveRoutingScorerType, Name: "test"},
+		scorers:     []scheduling.Scorer{newStubScorer("s1", stubScores)},
+		baseWeights: []float64{1.0},
+		mode:        "adaptive",
+	}
+
+	scores := s.Score(context.Background(), &scheduling.CycleState{}, nil, endpoints)
+	if len(scores) != 1 {
+		t.Fatalf("expected 1 score, got %d", len(scores))
+	}
+	// Single endpoint → k=1 → maxEntropy=log(1)=0 → neutral entropy=0.5
+	// EMA init to 1-1/1=0, then updated with alpha=2/2=1: ema = 0*0 + 1*0.5 = 0.5
+	// Adaptive weight = 1.0 * 0.5^0.5 = 0.707..., renormalized to 1.0
+	// Score = clamp(0.8) * 1.0 = 0.8
+	assertClose(t, scores[ep1], 0.8, 1e-9, "ep1 single endpoint")
+}
+
+func TestScore_ControlMode_SingleEndpoint(t *testing.T) {
+	ep1 := newMockEndpoint("ep1", 0.5, 10)
+	endpoints := []scheduling.Endpoint{ep1}
+
+	stubScores := map[scheduling.Endpoint]float64{ep1: 0.8}
+	s := &AdaptiveRoutingScorer{
+		typedName:   plugin.TypedName{Type: AdaptiveRoutingScorerType, Name: "test"},
+		scorers:     []scheduling.Scorer{newStubScorer("s1", stubScores)},
+		baseWeights: []float64{1.0},
+		mode:        "control",
+	}
+
+	scores := s.Score(context.Background(), &scheduling.CycleState{}, nil, endpoints)
+	if len(scores) != 1 {
+		t.Fatalf("expected 1 score, got %d", len(scores))
+	}
+	// Control mode: clamp(0.8) * 1.0 = 0.8
+	assertClose(t, scores[ep1], 0.8, 1e-9, "ep1 single endpoint control")
 }
 
 func TestScore_AdaptiveMode_UniformScores(t *testing.T) {

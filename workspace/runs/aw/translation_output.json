@@ -12,5 +12,5 @@
   "config_kind": "EndpointPickerConfig",
   "helm_path": "gaie.treatment.helmValues.inferenceExtension.pluginsCustomConfig.custom-plugins.yaml",
   "treatment_config_generated": true,
-  "description": "Entropy-based adaptive scorer weights plugin that delegates to PPC/queue/KV sub-scorers"
+  "description": "Entropy-based adaptive scorer weights: delegation scorer calling PPC/queue/KV sub-scorers via plugin.Handle, blending with entropy-adaptive weights (adaptive mode) or static 3:2:2 weights (control mode)"
 }

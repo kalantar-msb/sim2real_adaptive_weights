@@ -6,13 +6,13 @@
   "storage_class": "ibm-spectrum-scale-fileset",
   "is_openshift": true,
   "container_runtime": "podman",
-  "created_at": "2026-04-23T12:17:34Z",
-  "pipeline_commit": "786be28",
+  "created_at": "2026-04-24T13:40:45Z",
+  "pipeline_commit": "cfad6a8",
   "epp_image": "ghcr.io/kalantar/llm-d-inference-scheduler:aw",
   "stages": {
     "setup": {
       "status": "completed",
-      "completed_at": "2026-04-23T12:17:34Z",
+      "completed_at": "2026-04-24T13:40:45Z",
       "summary": "Namespace kalantar configured, PVCs created, Tekton tasks deployed"
     },
     "prepare": {

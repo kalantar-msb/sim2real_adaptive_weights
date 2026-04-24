@@ -1,5 +1,5 @@
 observe:
-  image: ghcr.io/inference-sim/blis:v0.7.6
+  image: ghcr.io/inference-sim/blis:v0.7.10
   workloads:
   - aggregate_rate: 40
     clients:
@@ -15,7 +15,7 @@ observe:
         type: gaussian
       lifecycle:
         windows:
-        - end_us: 50000000
+        - end_us: 200000000
           start_us: 0
       output_distribution:
         params:
@@ -40,7 +40,7 @@ observe:
         type: gaussian
       lifecycle:
         windows:
-        - end_us: 50000000
+        - end_us: 200000000
           start_us: 0
       output_distribution:
         params:
@@ -63,8 +63,8 @@ observe:
         type: gaussian
       lifecycle:
         windows:
-        - end_us: 100000000
-          start_us: 50000000
+        - end_us: 400000000
+          start_us: 200000000
       output_distribution:
         params:
           max: 640
@@ -74,8 +74,8 @@ observe:
         type: gaussian
       rate_fraction: 1.0
       streaming: true
-    horizon: 100000000
-    num_requests: 4000
+    horizon: 400000000
+    num_requests: 20000
     seed: 42
     version: '2'
     workload_name: w1_prefix_to_load_shift
@@ -121,8 +121,8 @@ observe:
         type: gaussian
       rate_fraction: 0.4
       streaming: true
-    horizon: 100000000
-    num_requests: 4000
+    horizon: 400000000
+    num_requests: 20000
     seed: 42
     version: '2'
     workload_name: w2_stationary
@@ -140,7 +140,7 @@ observe:
         type: gaussian
       lifecycle:
         windows:
-        - end_us: 50000000
+        - end_us: 200000000
           start_us: 0
       output_distribution:
         params:
@@ -165,7 +165,7 @@ observe:
         type: gaussian
       lifecycle:
         windows:
-        - end_us: 50000000
+        - end_us: 200000000
           start_us: 0
       output_distribution:
         params:
@@ -188,8 +188,8 @@ observe:
         type: gaussian
       lifecycle:
         windows:
-        - end_us: 100000000
-          start_us: 50000000
+        - end_us: 400000000
+          start_us: 200000000
       output_distribution:
         params:
           max: 768
@@ -213,8 +213,8 @@ observe:
         type: gaussian
       lifecycle:
         windows:
-        - end_us: 100000000
-          start_us: 50000000
+        - end_us: 400000000
+          start_us: 200000000
       output_distribution:
         params:
           max: 512
@@ -224,8 +224,8 @@ observe:
         type: gaussian
       rate_fraction: 0.15
       streaming: true
-    horizon: 100000000
-    num_requests: 4000
+    horizon: 400000000
+    num_requests: 20000
     seed: 42
     version: '2'
     workload_name: w3_multi_prefix_contention
@@ -236,28 +236,27 @@ stack:
         inferenceExtension:
           pluginsCustomConfig:
             custom-plugins.yaml: "apiVersion: inference.networking.x-k8s.io/v1alpha1\n\
-              kind: EndpointPickerConfig\nplugins:\n  - type: single-profile-handler\n\
-              \  - type: tokenizer\n    parameters:\n      modelName: Qwen/Qwen3-14B\n\
-              \      udsTokenizerConfig:\n        socketFile: /tmp/tokenizer/tokenizer-uds.socket\n\
-              \  - type: precise-prefix-cache-scorer\n    parameters:\n      tokenProcessorConfig:\n\
-              \        blockSize: 64\n      indexerConfig:\n        speculativeIndexing:\
-              \ true\n        tokenizersPoolConfig:\n          modelName: Qwen/Qwen3-14B\n\
-              \          local: null\n          hf: null\n          uds:\n       \
-              \     socketFile: /tmp/tokenizer/tokenizer-uds.socket\n      kvEventsConfig:\n\
-              \        topicFilter: \"kv@\"\n        concurrency: 4\n        discoverPods:\
-              \ false\n        zmqEndpoint: \"tcp://*:5557\"\n  - type: kv-cache-utilization-scorer\n\
-              \  - type: queue-scorer\n  - type: max-score-picker\nschedulingProfiles:\n\
-              \  - name: default\n    plugins:\n      - pluginRef: precise-prefix-cache-scorer\n\
-              \        weight: 3.0\n      - pluginRef: kv-cache-utilization-scorer\n\
-              \        weight: 2.0\n      - pluginRef: queue-scorer\n        weight:\
-              \ 2.0\n      - pluginRef: max-score-picker\n"
+              kind: EndpointPickerConfig\nplugins:\n  - name: profile\n    type: single-profile-handler\n\
+              \  - name: tokenizer\n    type: tokenizer\n    parameters:\n      modelName:\
+              \ Qwen/Qwen3-14B\n      udsTokenizerConfig:\n        socketFile: /tmp/tokenizer/tokenizer-uds.socket\n\
+              \  - name: ppc\n    type: precise-prefix-cache-scorer\n    parameters:\n\
+              \      speculativeIndexing: true\n      tokenProcessorConfig:\n    \
+              \    blockSize: 64\n      indexerConfig:\n        tokenizersPoolConfig:\n\
+              \          modelName: Qwen/Qwen3-14B\n          local: null\n      \
+              \    hf: null\n          uds:\n            socketFile: /tmp/tokenizer/tokenizer-uds.socket\n\
+              \      kvEventsConfig:\n        topicFilter: \"kv@\"\n        concurrency:\
+              \ 4\n        discoverPods: false\n        zmqEndpoint: \"tcp://*:5557\"\
+              \n  - name: kv\n    type: kv-cache-utilization-scorer\n  - name: qd\n\
+              \    type: queue-scorer\n  - name: picker\n    type: max-score-picker\n\
+              schedulingProfiles:\n  - name: default\n    plugins:\n      - pluginRef:\
+              \ ppc\n        weight: 3.0\n      - pluginRef: kv\n        weight: 2.0\n\
+              \      - pluginRef: qd\n        weight: 2.0\n      - pluginRef: picker\n"
     treatment:
       helmValues:
         inferenceExtension:
           image:
             hub: ghcr.io/kalantar
             name: llm-d-inference-scheduler
-            pullPolicy: Always
             tag: aw
           pluginsCustomConfig:
             custom-plugins.yaml: "apiVersion: inference.networking.x-k8s.io/v1alpha1\n\
@@ -265,8 +264,8 @@ stack:
               \  - name: tokenizer\n    type: tokenizer\n    parameters:\n      modelName:\
               \ Qwen/Qwen3-14B\n      udsTokenizerConfig:\n        socketFile: /tmp/tokenizer/tokenizer-uds.socket\n\
               \  - name: ppc\n    type: precise-prefix-cache-scorer\n    parameters:\n\
-              \      tokenProcessorConfig:\n        blockSize: 64\n      indexerConfig:\n\
-              \        speculativeIndexing: true\n        tokenizersPoolConfig:\n\
+              \      speculativeIndexing: true\n      tokenProcessorConfig:\n    \
+              \    blockSize: 64\n      indexerConfig:\n        tokenizersPoolConfig:\n\
               \          modelName: Qwen/Qwen3-14B\n          local: null\n      \
               \    hf: null\n          uds:\n            socketFile: /tmp/tokenizer/tokenizer-uds.socket\n\
               \      kvEventsConfig:\n        topicFilter: \"kv@\"\n        concurrency:\

@@ -8,7 +8,7 @@
       "model": "agent-reviewer",
       "verdict": "APPROVE",
       "issues": [],
-      "summary": "All criteria pass: Blend() faithfully translated with entropy, EMA, adaptive weights, fallback, and renormalization. Scorer interface correctly implemented with compile-time assertion, mutex for thread safety, structured TRACE/DEBUG logging. Factory validates all config params. 19 tests cover factory construction (8 cases) and scoring branches (empty, control, adaptive, EMA convergence, clamp). Registration matches treatment config type string. Config references all valid upstream and llm-d plugins. No hardcoded scoring parameters."
+      "summary": "Existing implementation verified correct for both modes. Adaptive mode: Shannon entropy with natural log, α=2/(k+1), EMA init=1-1/k, exponent=k/2, renormalization, fallback to base weights. Control mode: static clamp(score)×weight with pre-normalized weights. Factory validates all inputs, looks up sub-scorers via plugin.Handle. Registration chain verified. Test coverage comprehensive (factory + both scoring modes). Build/vet/test all pass."
     }
   ]
 }

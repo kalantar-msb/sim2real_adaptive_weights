@@ -2,13 +2,13 @@
 #
 # Steady 40 QPS with 60% prefix + 40% cold. No phases.
 # Adaptive algorithm must NOT regress vs static 3:2:2 here.
-# 4000 requests total.
+# 20000 requests total.
 
 version: "2"
 seed: 42
 aggregate_rate: 40
-num_requests: 4000
-horizon: 100000000   # 100s
+num_requests: 20000
+horizon: 400000000   # 400s
 
 clients:
   - id: "prefix-A"

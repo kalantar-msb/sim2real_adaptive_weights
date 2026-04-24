@@ -12,10 +12,10 @@ plugins:
   - name: ppc
     type: precise-prefix-cache-scorer
     parameters:
+      speculativeIndexing: true
       tokenProcessorConfig:
         blockSize: 64
       indexerConfig:
-        speculativeIndexing: true
         tokenizersPoolConfig:
           modelName: Qwen/Qwen3-14B
           local: null

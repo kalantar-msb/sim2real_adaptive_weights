@@ -1,0 +1,44 @@
+{
+  "wl-w1-prefix-to-load-shift-baseline": {
+    "workload": "w1_prefix_to_load_shift",
+    "package": "baseline",
+    "status": "done",
+    "namespace": null,
+    "retries": 0
+  },
+  "wl-w1-prefix-to-load-shift-treatment": {
+    "workload": "w1_prefix_to_load_shift",
+    "package": "treatment",
+    "status": "done",
+    "namespace": null,
+    "retries": 0
+  },
+  "wl-w2-stationary-baseline": {
+    "workload": "w2_stationary",
+    "package": "baseline",
+    "status": "done",
+    "namespace": null,
+    "retries": 0
+  },
+  "wl-w2-stationary-treatment": {
+    "workload": "w2_stationary",
+    "package": "treatment",
+    "status": "done",
+    "namespace": null,
+    "retries": 0
+  },
+  "wl-w3-multi-prefix-contention-baseline": {
+    "workload": "w3_multi_prefix_contention",
+    "package": "baseline",
+    "status": "done",
+    "namespace": null,
+    "retries": 0
+  },
+  "wl-w3-multi-prefix-contention-treatment": {
+    "workload": "w3_multi_prefix_contention",
+    "package": "treatment",
+    "status": "done",
+    "namespace": null,
+    "retries": 0
+  }
+}
